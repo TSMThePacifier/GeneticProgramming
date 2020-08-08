@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.dom.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/7.1.0/math.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+  <div class="wrapper">
+
+    <header>
+      <h1> Genetic Programming</h1>
+    </header>
+      
+  <section class="columns">
+  
+    <div class="column">
+      <h2>Poblacion Inicial</h2>
+      <p id="iniPopulation">Pop</p>
+    </div>
+    
+    <div class="column">
+      <h2>Resultado Esperado</h2>
+      <p id="expected">Info</p>
+      <h4>Informacion General</h4>
+      <p id="information">Info</p>
+      
+    </div>
+    
+    <div class="column">
+      <h2>Soluciones Encontradas</h2>
+      <p id="solutions">Sols</p>
+      
+    </div>
+    
+  </section>	
+
+    <section>
+      <div class="final">
+      <h2>Poblacion Final</h2>
+      <p id="expressions">Exp</p>
+    </div>
+    </section>
+  </div>
+
+  <script src="/static/js/Population.js"></script>
+  <script src="/static/js/Tree.js"></script>
+  <script src="/static/js/start.js"></script>
+</body>
+
+</html>
