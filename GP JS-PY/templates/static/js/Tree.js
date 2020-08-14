@@ -1,7 +1,7 @@
 class Tree {
 
     //constructor mediante el que se crea un arbol
-     constructor(value, child,arrayTree) {   
+     constructor(value, child) {   
         this.value=value;//nodo padre
         this.child=child;//nodos hijos
         this.fitness=0;
@@ -11,6 +11,7 @@ class Tree {
 
 
     calcFitness(treeResult,expectedResult) {
+        console.log(treeResult);
         let score = 0;
         let calc= expectedResult.toString()+"-"+treeResult.toString(); //se convierte a string para que eval()pueda manejar los parentesis
         let far= Math.abs(eval(calc));//esperado - obtenido

@@ -2,6 +2,7 @@ from __future__ import print_function
 from flask import Flask, render_template, make_response
 from flask import redirect, request, jsonify, url_for
 from flask import after_this_request
+from test_template import generate_test_information
 
 import io
 import os
@@ -21,6 +22,12 @@ def get_post_javascript_data():
     
     jsdata= request.form.to_dict()
     return jsonify(jsdata)
+
+@app.route('/getData', methods = ['GET'])
+def get_data():
+    
+    jsonResp = generate_test_information('ecuacion')
+    return jsonify(jsonResp)
 
 if __name__ == '__main__':
     app.run()

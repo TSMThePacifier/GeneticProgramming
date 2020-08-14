@@ -1,4 +1,3 @@
-from genetic import get_best_solution
 from inspect import signature
 import random
 
@@ -102,6 +101,7 @@ def genetic_setup(test_funcion):
     genes_iniciales = '0123546789' + variable + '+-*/() '
 
     data = create_data_set(parameters, test_funcion, True)
+    print(data)
 
     return parameters, symbols, variable, genes_iniciales, data
 
@@ -157,7 +157,7 @@ def generate_test_file(test_function_template, test_template):
     parameters, symbols, variable, genes_iniciales, data = genetic_setup('ecuacion')
 
     #Obtiene la mejor solucion a partir del algoritmo genetico
-    genetic_code = get_best_solution(parameters, symbols, variable, genes_iniciales, data)
+    genetic_code = "a+b+c*d"
 
     #Obtiene datos de prueba para ejecutar la funcion
     test_data = create_data_set(parameters, 'ecuacion', False)
@@ -173,10 +173,15 @@ def generate_test_file(test_function_template, test_template):
 
     #Genera el archivo de pruebas
     fname = 'generated_test.py'
-    data = genetic_template + new_template
+    data_for_template = genetic_template + new_template
 
     with open(fname, 'w') as f:
-        f.write('{}'.format(data))
+        f.write('{}'.format(data_for_template))
+    
+    
+def generate_test_information(function_name):
+    _, _, _, _, data = genetic_setup(function_name)
+    return data
 
-generate_test_file(test_function_template, test_template)
+#generate_test_file(test_function_template, test_template)
 
