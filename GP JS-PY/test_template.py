@@ -1,4 +1,4 @@
-from inspect import signature
+from inspect import signature, getsource
 import random
 
 #Template del test a ejecutar en archivo generado
@@ -16,16 +16,14 @@ test_template = '''def test_case(parameters):
 
     else:
         print('Test Failed!')
-        print('Result of ' + str(test_funcion) + ' = ' + str(test_result))
-        print('Result of ' + str(generated_function) + ' = ' + str(generated_result))
+        print('Result of test_funcion = ' + str(test_result))
+        print('Result of generated_function = ' + str(generated_result))
         return False
 
 @test_case'''
 
 #Template de funcion de test
 test_function_template = '''
-from test_template import test_funcion
-
 def generated_function(parameters):
 
     result = genetic_code
@@ -35,9 +33,9 @@ def generated_function(parameters):
 '''
 
 #Funcion definida por el usuario a ser probada
-def ecuacion(numero_1, numero_2, numero_3, numero_4):
+def ecuacion(a, b, c, d, e):
 
-    result = numero_1 + numero_2 + numero_3 * numero_4
+    result = a + b + c * d / e
 
     return result
 
@@ -79,7 +77,7 @@ def replace_string(inputs, parameters, test_funcion, generated_function, genetic
 
     return function_template
 
-#Prepara el numero de variables, los simbolos a utilizar, los genes iniciales y los datos de prueba
+#Prepara el numero de parametros y los datos de prueba
 def genetic_setup(test_funcion):
 
     sig = eval('signature(' + test_funcion + ')')
@@ -94,16 +92,27 @@ def genetic_setup(test_funcion):
         parameters.append(chr(97 + iteration))
         iteration +=1
 
-    symbols = ['+', '-', '/', '*', '(', ')']
-
-    variable = convert_parameters_to_alphabet(parameters)
-
-    genes_iniciales = '0123546789' + variable + '+-*/() '
-
     data = create_data_set(parameters, test_funcion, True)
-    print(data)
 
-    return parameters, symbols, variable, genes_iniciales, data
+    data['Function'] = get_users_executable_code(ecuacion)
+
+    return parameters, data
+
+#Obtiene el codigo ejecutable de la funcion programada por el ususario
+def get_users_executable_code(funtion_name):
+
+    function_code = getsource(funtion_name).splitlines()
+
+    executable_code = function_code[2].rsplit('= ', 1)
+
+    return executable_code[1]
+
+#Genera los datos de prueba para enviar al algoritmo genetico
+def generate_test_information(function_name):
+
+    _, data = genetic_setup(function_name)
+
+    return data
 
 #Convierte los parametros en el orden de las letras del alfabeto
 def convert_parameters_to_alphabet(parameters):
@@ -150,14 +159,19 @@ def create_data_set(parameters, function_name, flag):
 
     return data
 
+#Obtiene la funcion programada por el usuario
+def get_user_code(function_name):
+
+    return getsource(function_name)
+
 #Genera el archivo de prueba
 def generate_test_file(test_function_template, test_template):
 
     #Genera el valor inicial de las variables a utilizar en la generacion de codigo genetico
-    parameters, symbols, variable, genes_iniciales, data = genetic_setup('ecuacion')
+    parameters, data = genetic_setup('ecuacion')
 
     #Obtiene la mejor solucion a partir del algoritmo genetico
-    genetic_code = "a+b+c*d"
+    genetic_code = ((getsource(ecuacion).splitlines())[2].rsplit('= ', 1))[1]
 
     #Obtiene datos de prueba para ejecutar la funcion
     test_data = create_data_set(parameters, 'ecuacion', False)
@@ -168,20 +182,13 @@ def generate_test_file(test_function_template, test_template):
     #Sustituye valores en el template de funcion de prueba
     new_template = replace_string(test_data, parameters, 'ecuacion', 'genetic_test', '', test_template)
 
-    print(genetic_template)
-    print(new_template)
-
     #Genera el archivo de pruebas
     fname = 'generated_test.py'
-    data_for_template = genetic_template + new_template
+    user_function = get_user_code(ecuacion)
+    data_for_template = user_function + genetic_template + new_template
 
     with open(fname, 'w') as f:
-        f.write('{}'.format(data_for_template))
-    
-    
-def generate_test_information(function_name):
-    _, _, _, _, data = genetic_setup(function_name)
-    return data
+        f.write('{}'.format(data_for_template)) 
 
-#generate_test_file(test_function_template, test_template)
-
+generate_test_file(test_function_template, test_template)
+generate_test_information('ecuacion')
