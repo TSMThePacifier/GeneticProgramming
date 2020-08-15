@@ -4,6 +4,7 @@ from flask import redirect, request, jsonify, url_for
 from flask import after_this_request
 from test_template import generate_test_information
 
+import json
 import io
 import os
 import uuid
@@ -26,7 +27,8 @@ def get_post_javascript_data():
 @app.route('/getData', methods = ['GET'])
 def get_data():
     
-    jsonResp = generate_test_information('ecuacion')
+    data = generate_test_information('ecuacion')
+    jsonResp= json.dumps(data)
     return jsonify(jsonResp)
 
 if __name__ == '__main__':

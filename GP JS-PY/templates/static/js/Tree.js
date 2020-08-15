@@ -13,13 +13,13 @@ class Tree {
     calcFitness(treeResult,expectedResult) {
         console.log(treeResult);
         let score = 0;
-        let calc= expectedResult.toString()+"-"+treeResult.toString(); //se convierte a string para que eval()pueda manejar los parentesis
-        let far= Math.abs(eval(calc));//esperado - obtenido
+        let calculation= expectedResult.toString()+"-"+treeResult.toString(); //se convierte a string para que eval()pueda manejar los parentesis
+        let difference= Math.abs(eval(calculation));//esperado - obtenido
         
-        if(far>100){
+        if(difference>100){
             score= 0;
         }else{
-            score=100-far;
+            score=100-difference;
         }
         this.fitness= score;
       }

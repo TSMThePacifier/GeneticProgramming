@@ -33,9 +33,9 @@ def generated_function(parameters):
 '''
 
 #Funcion definida por el usuario a ser probada
-def ecuacion(a, b, c, d, e):
+def ecuacion(a, b, c, d):
 
-    result = a + b + c * d / e
+    result = a + b + c * d
 
     return result
 
