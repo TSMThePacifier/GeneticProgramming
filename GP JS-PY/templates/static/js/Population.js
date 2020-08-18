@@ -5,11 +5,12 @@ class Population {
 
     //datos iniciales o entradas
     this.dataSet = dtSet;
-    this.initialParent= iniParent;
+    this.initialParent= [this.unidimentionalArrayToTree(iniParent)];
     this.maxPopulation = maxPop;
     this.mutationRate = mutRate;
 
     //datos del algoritmo
+    this.variables= iniParent.filter(v => this.isLetter(v));
     this.values = [];
     this.result;
     this.population = [];
@@ -26,8 +27,9 @@ class Population {
 
     //proceso de inicializacion de la poblacion
     this.assignValues();
-    this.initPopulation(iniParent);
+    this.initPopulation(this.initialParent);
     this.initialPopulation = this.population.slice();//copia de la poblacion inicial
+    console.log(this.initialPopulation);
     this.includeValuesToGens();
   }
 
@@ -39,16 +41,16 @@ class Population {
   }
 
   //cambia los valores de las variables a reemplazar por los siguientes en el dataset
-  assignValues() {
+  assignValues() {   
+    this.values= [];
+    console.log("vars");
+    console.log(this.variables);
+
     let index = ++this.dataSetCursor;
-    console.log("DS CURSOR "+this.dataSetCursor);
     let dsLen = this.dataSet[index].length - 1
-    this.values = [];
-    let letter = 'a';
 
     for (let i = 0; i < dsLen; i++) {
-      this.values.push([letter, dataSet[index][i]]);
-      letter = String.fromCharCode(letter.charCodeAt() + 1);
+      this.values.push([this.variables[i], dataSet[index][i]]);
     }
     this.result = dataSet[index][dsLen];
 
@@ -57,18 +59,20 @@ class Population {
     console.log("RESULT: "+this.result);
   }
 
-  initPopulation(iniParent) {    
+  initPopulation(initialParent) { 
+    console.log("initialParent");   
+    console.log(initialParent);   
     //ecuacion inicial
-    for (let i = 0; i < iniParent.length; i++) {
-      let tree =iniParent[i];
+    for (let i = 0; i < initialParent.length; i++) {
+      let tree =initialParent[i];
       tree.arrayTree = this.treeToArray(tree);
       tree.calcFitness(this.getTreeResult(tree.arrayTree, this.values), this.result);
       this.population.push(tree);
     }
 
     //restante random
-    for (let i = 0; i <this.maxPopulation-iniParent.length; i++) {
-      let tree = this.randomTree();
+    for (let i = 0; i <this.maxPopulation-initialParent.length; i++) {
+      let tree = this.randomTree(this.values);
       tree.arrayTree = this.treeToArray(tree);
       tree.calcFitness(this.getTreeResult(tree.arrayTree, this.values), this.result);
       this.population.push(tree);
@@ -76,30 +80,64 @@ class Population {
   }
 
   //genera un arbol aleatorio
-  randomTree() {
-    let tempVars = this.values.slice();//copiar array
-    let child = [];
-    let finalTree = new Tree(this.newSign(), []);
-    let tempTree;
+  randomTree(values) {
+    let tempTree= new Tree(this.newSign(),[]);
+    let tempVars = values.slice();//copiar array
     let index;
 
-    for (let i = 0; i < this.values.length; i++) {//********** forma de determinar los nodos iniciales
-      index = 0;
-      if (tempVars.length !== 1) {
-        index = this.randFloor(0, tempVars.length - 1);
+    for (let i = 0; i < values.length; i++) {//********** forma de determinar los nodos iniciales
+
+      if (tempTree.child.length === 2) {
+        tempTree = new Tree(this.newSign(), [tempTree]);
+        let recursiveTree= this.randomTree(tempVars);
+  
+        if(recursiveTree.child.length==1){
+          tempTree.child.push(recursiveTree.child[0]);
+        }else{
+          tempTree.child.push(recursiveTree);
+        }      
+        return tempTree;
+      }else{
+        index = 0;
+        if (tempVars.length !== 1) {
+          index = this.randFloor(0, tempVars.length - 1);
+        }
       }
 
-      child.push(tempVars[index][0]);
+      tempTree.child.push(tempVars[index][0]);
       tempVars.splice(index, 1);
+    }
+    return tempTree;
+  }
 
-      if (child.length === 2) {
-        tempTree = new Tree(this.newSign(), child);
-        finalTree.child.push(tempTree);
-        child = [];
+  
+  unidimentionalArrayToTree(arrayParent) {
+  console.log(arrayParent);
+
+  let tempTree = new Tree("", []);
+
+  for (let i = 0; i < arrayParent.length; i++) {
+    if (tempTree.child.length === 2) {
+      tempTree = new Tree(arrayParent[i], [tempTree]);
+      let recursiveTree= this.unidimentionalArrayToTree(arrayParent.slice(i+1, arrayParent.length));
+
+      if(recursiveTree.child.length===1){
+        tempTree.child.push(recursiveTree.child[0]);
+      }else{
+        tempTree.child.push(recursiveTree);
+      }      
+      return tempTree;
+    } else {
+
+      if (this.isLetter(arrayParent[i]) || !isNaN(arrayParent[i])) {
+        tempTree.child.push(arrayParent[i]);
+      } else {
+        tempTree.value = arrayParent[i];
       }
     }
-    return finalTree;
   }
+  return tempTree;
+}
 
   //convierte un arbol en un arreglo para su más facil manejo
   treeToArray(tree) {
@@ -402,6 +440,24 @@ class Population {
       total += this.population[i].fitness;
     }
     return total / (this.population.length);
+  }
+  
+  getDataSet(){
+    let display="";
+    let ecuacion= this.getBestSolution();
+    let replacement="";
+
+    for (let i = 0; i < Object.keys(this.dataSet).length; i++) {
+      replacement= ecuacion;
+      
+      for (let j = 0; j < this.dataSet[i].length-1; j++) {     
+        display+= " "+this.variables[j]+"= "+ this.dataSet[i][j]+"";
+        replacement= replacement.replace(this.variables[j],dataSet[i][j]);
+      }
+      display+= "<br>"+replacement+" = "+(eval(replacement));
+      display+= "<br><br>";
+    }
+    return display;
   }
 
   //se obtienen todas las funciones existentes en la poblacion
