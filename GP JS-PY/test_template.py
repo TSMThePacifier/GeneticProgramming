@@ -1,14 +1,16 @@
 from inspect import signature, getsource
 import random
+from user_code import equation
 
 #Template del test a ejecutar en archivo generado
-test_template = '''def test_case(parameters):
+TEST_TEMPLATE = '''def test_case(parameters):
 
     try:
         test_result = test_funcion(parameters)
         generated_result = generated_function(parameters)
     except:
         print('Someting went wrong')
+        return False
 
     if test_result == generated_result:
         print('Test worked!')
@@ -23,7 +25,9 @@ test_template = '''def test_case(parameters):
 @test_case'''
 
 #Template de funcion de test
-test_function_template = '''
+TEST_FUNCTION_TEMPLATE = '''
+from user_code import equation
+
 def generated_function(parameters):
 
     result = genetic_code
@@ -31,13 +35,6 @@ def generated_function(parameters):
     return result
 
 '''
-
-#Funcion definida por el usuario a ser probada
-def ecuacion(a, b, c, d):
-
-    result = a + b + c * d
-
-    return result
 
 #Encargada de reemplazar los inpus, parametros, nombres de funciones y codigo genetico dentro de los templates
 def replace_string(inputs, parameters, test_funcion, generated_function, genetic_code, function_template):
@@ -94,7 +91,7 @@ def genetic_setup(test_funcion):
 
     data = create_data_set(parameters, test_funcion, True)
 
-    data['Function'] = get_users_executable_code(ecuacion)
+    data['Function'] = get_users_executable_code(equation)
 
     return parameters, data
 
@@ -165,30 +162,27 @@ def get_user_code(function_name):
     return getsource(function_name)
 
 #Genera el archivo de prueba
-def generate_test_file(test_function_template, test_template):
+def generate_test_file(generated_code):
 
     #Genera el valor inicial de las variables a utilizar en la generacion de codigo genetico
-    parameters, data = genetic_setup('ecuacion')
+    parameters, data = genetic_setup('equation')
 
     #Obtiene la mejor solucion a partir del algoritmo genetico
-    genetic_code = ((getsource(ecuacion).splitlines())[2].rsplit('= ', 1))[1]
+    genetic_code = generated_code
 
     #Obtiene datos de prueba para ejecutar la funcion
-    test_data = create_data_set(parameters, 'ecuacion', False)
+    test_data = create_data_set(parameters, 'equation', False)
 
     #Sustituye valores en el template de la funcion de prueba genetica
-    genetic_template = replace_string(test_data, parameters, 'ecuacion', 'genetic_test', genetic_code, test_function_template)
+    genetic_template = replace_string(test_data, parameters, 'equation', 'genetic_test', genetic_code, TEST_FUNCTION_TEMPLATE)
 
     #Sustituye valores en el template de funcion de prueba
-    new_template = replace_string(test_data, parameters, 'ecuacion', 'genetic_test', '', test_template)
+    new_template = replace_string(test_data, parameters, 'equation', 'genetic_test', '', TEST_TEMPLATE)
 
     #Genera el archivo de pruebas
     fname = 'generated_test.py'
-    user_function = get_user_code(ecuacion)
-    data_for_template = user_function + genetic_template + new_template
+    data_for_template = genetic_template + new_template
 
     with open(fname, 'w') as f:
         f.write('{}'.format(data_for_template)) 
 
-generate_test_file(test_function_template, test_template)
-generate_test_information('ecuacion')

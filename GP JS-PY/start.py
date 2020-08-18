@@ -2,12 +2,13 @@ from __future__ import print_function
 from flask import Flask, render_template, make_response
 from flask import redirect, request, jsonify, url_for
 from flask import after_this_request
-from test_template import generate_test_information
+from test_template import generate_test_information, generate_test_file
 
 import json
 import io
 import os
 import uuid
+import json
 
 app = Flask(__name__)
 app.secret_key = 's3cr3t'
@@ -22,12 +23,13 @@ def index():
 def get_post_javascript_data():
     
     jsdata= request.form.to_dict()
+    generate_test_file(jsdata['solution'])
     return jsonify(jsdata)
 
 @app.route('/getData', methods = ['GET'])
 def get_data():
     
-    data = generate_test_information('ecuacion')
+    data = generate_test_information('equation')
     jsonResp= json.dumps(data)
     return jsonify(jsonResp)
 
