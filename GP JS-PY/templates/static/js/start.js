@@ -25,23 +25,27 @@ function draw() {
   if (population.isFinished()) {
     noLoop();
     sendInfo();
-    displayInfo();
+    finalInfo();
   }
+    actualInfo(); 
 }
 
 //despliega la información resultado en pantalla
-function displayInfo() {
+function actualInfo() {
   document.getElementById("iniPopulation").innerHTML = population.initialExpressions();
-  document.getElementById("solutions").innerHTML = population.getBestSolution();
-  document.getElementById("dataset").innerHTML = population.getDataSet();
 
-  let statstext = "Total generations:     " + population.getGenerations() + "<br>";
-  statstext += "Average fitness:       " + nf(population.getAverageFitness()) + "<br>";
-  statstext += "Total population:      " + maxPop + "<br>";
-  statstext += "Mutation rate:         " + floor(mutationRate * 100) + "%";
+  let statstext = "Generaciones Totales:    " + population.getGenerations() + "<br>";
+  statstext += "Población por Generación:      " + maxPop + "<br>";
+  statstext += "Promedio de Fitness:       " + nf(population.getAverageFitness()) + "<br>";  
+  statstext += "Rango de Mutación:         " + floor(mutationRate * 100) + "%";
 
   document.getElementById("information").innerHTML = statstext;
   document.getElementById("expressions").innerHTML = population.allExpressions();
+}
+
+function finalInfo() {
+  document.getElementById("solutions").innerHTML = population.getBestSolution();
+  document.getElementById("dataset").innerHTML = population.getDataSet();
 }
 
 function getData() {

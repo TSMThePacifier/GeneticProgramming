@@ -24,3 +24,7 @@ class Tree {
         this.fitness= score;
       }
 }
+
+
+
+      

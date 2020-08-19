@@ -134,7 +134,7 @@ def create_data_set(parameters, function_name, flag):
 
         #Obtiene la cantidad de numeros correspondientes a la cantidad de parametros
         for element in parameters:
-            data_set.append(random.randrange(0,100))
+            data_set.append(random.randrange(1,100))
 
         #Les da formato de string separados por coma
         parameters_string = ""

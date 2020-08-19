@@ -5,12 +5,12 @@ class Population {
 
     //datos iniciales o entradas
     this.dataSet = dtSet;
-    this.initialParent= [this.unidimentionalArrayToTree(iniParent)];
+    this.initialParent = [this.unidimentionalArrayToTree(iniParent)];
     this.maxPopulation = maxPop;
     this.mutationRate = mutRate;
 
     //datos del algoritmo
-    this.variables= iniParent.filter(v => this.isLetter(v));
+    this.variables = iniParent.filter(v => this.isLetter(v));
     this.values = [];
     this.result;
     this.population = [];
@@ -19,7 +19,6 @@ class Population {
     this.perfectScore = 100;
     this.bestSolution = "";
     this.finished = false;
-    this.dataSetCursor = -1;
 
     //genes para mutacion
     this.signs = ['-', '*', '/', "+"];
@@ -29,50 +28,70 @@ class Population {
     this.assignValues();
     this.initPopulation(this.initialParent);
     this.initialPopulation = this.population.slice();//copia de la poblacion inicial
-    console.log(this.initialPopulation);
     this.includeValuesToGens();
+  }
+
+  //transforma el array unidimencional que contiene la solucion (ejm: ["a","+","b","-","c"]) en un arbol
+  unidimentionalArrayToTree(arrayParent) {
+    let tempTree = new Tree("", []);
+
+    for (let i = 0; i < arrayParent.length; i++) {
+      if (tempTree.child.length === 2) {
+        tempTree = new Tree(arrayParent[i], [tempTree]);
+        let recursiveTree = this.unidimentionalArrayToTree(arrayParent.slice(i + 1, arrayParent.length));
+
+        if (recursiveTree.child.length === 1) {
+          tempTree.child.push(recursiveTree.child[0]);
+        } else {
+          tempTree.child.push(recursiveTree);
+        }
+        return tempTree;
+      } else {
+
+        if (this.isLetter(arrayParent[i]) || !isNaN(arrayParent[i])) {
+          tempTree.child.push(arrayParent[i]);
+        } else {
+          tempTree.value = arrayParent[i];
+        }
+      }
+    }
+    return tempTree;
+  }
+
+  //cambia los valores de las variables a reemplazar por los siguientes en el dataset
+  assignValues() {
+    this.values = [];
+    let dsLen = this.dataSet[0].length - 1
+
+    for (let i = 0; i < dsLen; i++) {
+      this.values.push([this.variables[i], dataSet[0][i]]);
+    }
+    this.result = dataSet[0][dsLen];
+
+    console.log("VALUES");
+    console.log(this.values);
+    console.log("RESULT: " + this.result);
   }
 
   //incluye los parametros del metodo dentro de los posibles valores para mutar
   includeValuesToGens() {
-    for (let i = 0; i < this.values.length; i++) {
-      this.numberOrLetter.push(this.values[i][0]);
+    for (let i = 0; i < this.variables.length; i++) {
+      this.numberOrLetter.push(this.variables[i]);
     }
   }
 
-  //cambia los valores de las variables a reemplazar por los siguientes en el dataset
-  assignValues() {   
-    this.values= [];
-    console.log("vars");
-    console.log(this.variables);
-
-    let index = ++this.dataSetCursor;
-    let dsLen = this.dataSet[index].length - 1
-
-    for (let i = 0; i < dsLen; i++) {
-      this.values.push([this.variables[i], dataSet[index][i]]);
-    }
-    this.result = dataSet[index][dsLen];
-
-    console.log("VALUES");
-    console.log(this.values);
-    console.log("RESULT: "+this.result);
-  }
-
-  initPopulation(initialParent) { 
-    console.log("initialParent");   
-    console.log(initialParent);   
+  initPopulation(initialParent) {
     //ecuacion inicial
     for (let i = 0; i < initialParent.length; i++) {
-      let tree =initialParent[i];
+      let tree = initialParent[i];
       tree.arrayTree = this.treeToArray(tree);
       tree.calcFitness(this.getTreeResult(tree.arrayTree, this.values), this.result);
       this.population.push(tree);
     }
 
     //restante random
-    for (let i = 0; i <this.maxPopulation-initialParent.length; i++) {
-      let tree = this.randomTree(this.values);
+    for (let i = 0; i < this.maxPopulation - initialParent.length; i++) {
+      let tree = this.randomTree(this.variables);
       tree.arrayTree = this.treeToArray(tree);
       tree.calcFitness(this.getTreeResult(tree.arrayTree, this.values), this.result);
       this.population.push(tree);
@@ -80,64 +99,35 @@ class Population {
   }
 
   //genera un arbol aleatorio
-  randomTree(values) {
-    let tempTree= new Tree(this.newSign(),[]);
-    let tempVars = values.slice();//copiar array
+  randomTree(variables) {
+    let tempTree = new Tree(this.newSign(), []);
+    let tempVars = variables.slice();//copiar array
     let index;
 
-    for (let i = 0; i < values.length; i++) {//********** forma de determinar los nodos iniciales
+    for (let i = 0; i < variables.length; i++) {//********** forma de determinar los nodos iniciales
 
       if (tempTree.child.length === 2) {
         tempTree = new Tree(this.newSign(), [tempTree]);
-        let recursiveTree= this.randomTree(tempVars);
-  
-        if(recursiveTree.child.length==1){
+        let recursiveTree = this.randomTree(tempVars);
+
+        if (recursiveTree.child.length == 1) {
           tempTree.child.push(recursiveTree.child[0]);
-        }else{
+        } else {
           tempTree.child.push(recursiveTree);
-        }      
+        }
         return tempTree;
-      }else{
+      } else {
         index = 0;
         if (tempVars.length !== 1) {
           index = this.randFloor(0, tempVars.length - 1);
         }
       }
 
-      tempTree.child.push(tempVars[index][0]);
+      tempTree.child.push(tempVars[index]);
       tempVars.splice(index, 1);
     }
     return tempTree;
   }
-
-  
-  unidimentionalArrayToTree(arrayParent) {
-  console.log(arrayParent);
-
-  let tempTree = new Tree("", []);
-
-  for (let i = 0; i < arrayParent.length; i++) {
-    if (tempTree.child.length === 2) {
-      tempTree = new Tree(arrayParent[i], [tempTree]);
-      let recursiveTree= this.unidimentionalArrayToTree(arrayParent.slice(i+1, arrayParent.length));
-
-      if(recursiveTree.child.length===1){
-        tempTree.child.push(recursiveTree.child[0]);
-      }else{
-        tempTree.child.push(recursiveTree);
-      }      
-      return tempTree;
-    } else {
-
-      if (this.isLetter(arrayParent[i]) || !isNaN(arrayParent[i])) {
-        tempTree.child.push(arrayParent[i]);
-      } else {
-        tempTree.value = arrayParent[i];
-      }
-    }
-  }
-  return tempTree;
-}
 
   //convierte un arbol en un arreglo para su más facil manejo
   treeToArray(tree) {
@@ -157,29 +147,32 @@ class Population {
   }
 
   //se calcula el resultado de la solucion para un arbol 
-  getTreeResult(arrayTree, values) {
-    let vals = values.slice();
-    let fullTree = "(";
+  getTreeResult(arrayTree) {
+    let solucion = this.getExpression(arrayTree);
 
+    for (let i = 0; i < this.values.length; i++) {
+        let regex = new RegExp(`\\b${this.values[i][0]}\\b`, 'gi');
+        solucion = solucion.replace(regex, this.values[i][1]);
+    }
+    let resp = eval(solucion);
+
+    if (resp < 0) {
+      resp = "(" + resp + ")";
+    }
+    return resp;
+  }
+
+  //se obtiene la funcion almacenada en el arbo; ejm: a*b
+  getExpression(arrayTree) {
+    let fullTree = "";
     for (let i = 0; i < arrayTree.length; i++) {
       if (typeof arrayTree[i] === "object") {
-        fullTree += this.getTreeResult(arrayTree[i], values);
+        fullTree += this.getExpression(arrayTree[i]);
       } else {
-        if (i !== 1 && isNaN(arrayTree[i])) {
-          let val = values.filter(v => v[0] == arrayTree[i])
-          fullTree += val[0][1];
-        } else {
-          fullTree += arrayTree[i];
-        }
+        fullTree += arrayTree[i];
       }
     }
-    fullTree += ")";
-    let e = eval(fullTree);
-    if (e < 0) {
-      e = "(" + e + ")"; //si el numero es negativo se devuelve con parentesis para evitar errores en le calculo
-    }
-
-    return e;
+    return fullTree;
   }
 
   //se calcula cuales son los padres mas aptos y se llena el matingPool con mayor cantidad de esos, con base en el fitness 
@@ -187,10 +180,9 @@ class Population {
     this.matingPool = [];
 
     for (let i = 0; i < this.population.length; i++) {
-
-     // let fitness = map(this.population[i].fitness, 0, 100, 0, 1);
-     // let reproductionPercentage = floor(fitness * 100);
-     let reproductionRange = floor(this.population[i].fitness);
+      // let fitness = map(this.population[i].fitness, 0, 100, 0, 1);
+      // let reproductionPercentage = floor(fitness * 100);
+      let reproductionRange = floor(this.population[i].fitness);
       for (let j = 0; j < reproductionRange; j++) {
         this.matingPool.push(this.population[i]);
       }
@@ -199,36 +191,28 @@ class Population {
 
   //se generan los nuevos hijos mediante el cruce y la mutacion
   generate() {
-    let newPop = [];
+    if (this.matingPool.length !== 0) {
+      
+      let newPop = [];
+      for (let i = 0; i < this.maxPopulation; i++) {
+        let parentA = this.matingPool[this.randFloor(0, this.matingPool.length - 1)];
+        let parentB = this.matingPool[this.randFloor(0, this.matingPool.length - 1)];
+        let child = this.crossover(parentA.arrayTree, parentB.arrayTree);
 
-    for (let i = 0; i < this.maxPopulation; i++) {
-      let parentA = this.matingPool[this.randFloor(0, this.matingPool.length - 1)];
-      let parentB = this.matingPool[this.randFloor(0, this.matingPool.length - 1)];
+        this.mutate(this.mutationRate, child);
+        this.additionMutate(child, this.values);//mutacion por agregacion
 
-      console.log("parentA");
-      console.log(parentA);
-      console.log("parentB");
-      console.log(parentB);
+        let tree = this.arrayToTree(child);//se transforma el nuevo hijo que es un array en un arbol
+        tree.arrayTree = child;
 
-      let child = this.crossover(parentA.arrayTree, parentB.arrayTree);
-
-      console.log("newChild");
-      console.log(child);
-
-      this.mutate(this.mutationRate, child);
-      this.additionMutate(child, this.values);//mutacion por agregacion
-
-      console.log("childmutate");
-      console.log(child);
-
-      let tree = this.arrayToTree(child);//se transforma el nuevo hijo que es un array en un arbol
-      tree.arrayTree = child;
-
-      tree.calcFitness(this.getTreeResult(child, this.values), this.result);
-      newPop.push(tree);
+        tree.calcFitness(this.getTreeResult(child, this.values), this.result);
+        newPop.push(tree);
+      }
+      this.population = newPop; //se reemplaza la antigua poblacion
+      this.generations++;
+    } else {
+      alert("La reproducción no ha sido favorable, no existe ningún padre apto del cual generar una solución. Pruebe nuevamente");
     }
-    this.population = newPop; //se reemplaza la antigua poblacion
-    this.generations++;
   }
 
   //se hace un cruce de un padre A con un padre B para generar un nuevo hijo
@@ -272,7 +256,7 @@ class Population {
       } else {
         let randomMutationRate = this.rand(0, 1);
         if (randomMutationRate < mutationRate) {
-          console.log("MUTATE!!!");
+          console.log("MUTATEEE!");
 
           if (this.isLetter(newChild[i]) || !isNaN(newChild[i])) {
             newChild[i] = this.newNumberOrLetter();
@@ -286,23 +270,49 @@ class Population {
   }
 
   additionMutate(arrayTree, values) {
-    console.log("addition");
-    console.log(arrayTree);
+    let tempArrayTree = this.verifiedVariables(arrayTree, values);
 
-    for (let i = 0; i < values.length; i++) {
+    if (tempArrayTree.length !== 0) {
+      let indexOptions = [0, 2];
+      let index = indexOptions[this.randFloor(0, 1)];
+      let tempChild = arrayTree[index];
 
-      let arrayTreeString = JSON.stringify(arrayTree);
-      if (arrayTreeString.search(values[i][0]) === -1) {
-        console.log(arrayTreeString);
-        console.log("not contain");
-        console.log(values[i][0]);
-        let indexOptions = [0, 2];
-        let index = indexOptions[this.randFloor(0, 1)];
-        let tempChild = arrayTree[index];
-        let tree = [tempChild, this.newSign(), values[i][0]];
-        arrayTree[index] = tree;
+      if (tempArrayTree.length === 1) {
+        arrayTree[index] = [tempChild, this.newSign(), tempArrayTree[0]];
+      } else {
+        arrayTree[index] = [tempChild, this.newSign(), tempArrayTree];
       }
     }
+  }
+
+  verifiedVariables(arrayTree, values) {
+    let arrayTreeString = JSON.stringify(arrayTree);
+    let tempArrayTree = [];
+
+    for (let i = 0; i < values.length; i++) {
+      if (arrayTreeString.search(values[i][0]) === -1) {
+        console.log("ADDITION!");
+        console.log(arrayTreeString);
+
+        if (tempArrayTree.length === 3) {
+          tempArrayTree = [[tempArrayTree], this.newSign()];
+          let recursiveArrayTree = this.verifiedVariables(arrayTree, values.slice(i, values.length));
+
+          if (recursiveArrayTree.length === 1) {
+            tempArrayTree.push(recursiveArrayTree[0]);
+          } else {
+            tempArrayTree.push(recursiveArrayTree);
+          }
+          return tempArrayTree;
+        } else {
+          if (tempArrayTree.length === 1) {
+            tempArrayTree.push(this.newSign());
+          }
+          tempArrayTree.push(values[i][0]);
+        }
+      }
+    }
+    return tempArrayTree;
   }
 
   //se obtienen los subArboles que tiene un arbol en su totalidad
@@ -342,6 +352,46 @@ class Population {
     return tree;
   }
 
+  
+  //se evalua en la poblacion actual si hay individuos con un fitness perfecto; osea que resuelve lo esperado
+  evaluate() {
+    for (let i = 0; i < this.population.length; i++) {
+
+      if (this.population[i].fitness === this.perfectScore) {
+        this.bestSolution = this.getExpression(this.population[i].arrayTree);
+        console.log("BEST SOLUTIOOOOOON! "+ this.bestSolution);
+
+        if (this.bestSolution !== this.getExpression(this.initialPopulation[0].arrayTree)) {
+          let all= true;
+          let dsLen= this.dataSet[0].length-1;
+          let bS;
+
+          for (let i = 0; i < Object.keys(this.dataSet).length; i++) {
+            bS= this.bestSolution;
+
+            for (let j = 0; j < this.values.length; j++) {
+              let regex = new RegExp(`\\b${this.values[j][0]}\\b`, 'gi');
+              bS = bS.replace(regex, this.dataSet[i][j]);
+            }
+
+            console.log("Reemplazo en solucion "+bS);
+            console.log("*ESPERADO "+dataSet[i][dsLen]);
+            console.log("*OBTENIDO "+eval(bS));
+
+            if(dataSet[i][dsLen]!== eval(bS)){
+              all= false;
+            }
+          }
+
+          if(all){
+            this.finished = true;
+            return;
+          }
+        }
+      }
+    }
+  }
+
   //se genera un nuevo signo aleatorio
   newSign() {
     let s = this.randFloor(0, this.signs.length - 1);
@@ -371,55 +421,6 @@ class Population {
     return letter;
   }
 
-  //se evalua en la poblacion actual si hay individuos con un fitness perfecto; osea que resuelve lo esperado
-  evaluate() {
-    for (let i = 0; i < this.population.length; i++) {
-
-      if (this.population[i].fitness === this.perfectScore) {        
-        this.bestSolution = this.getExpression(this.population[i].arrayTree);
-
-        console.log(this.bestSolution);
-
-        if(this.bestSolution!==this.getExpression(this.initialPopulation[0].arrayTree)){          
-        let index= this.dataSetCursor;
-        
-        console.log(Object.keys(this.dataSet).length-1);
-
-        if(index=== Object.keys(this.dataSet).length-1){ //******verificar que ya haya recorrido todos los elementos
-          console.log("CURSOR "+(index));
-          console.log("LEN DS"+(Object.keys(this.dataSet).length-1));          
-          
-          this.finished = true;
-          return;
-        }else{
-          //avanzar al siguiente, con la mejor solucion como padre
-
-          console.log("CURSOR "+(index));
-          console.log("LEN DS"+(Object.keys(population.dataSet).length-1));
-
-          //this.initPopulation(this.population[i]); //enviar solo solucion encontrada.
-          console.log("SIGUIENTEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
-          this.assignValues();
-        } 
-        }       
-      }
-    }
-  }
-
-  //se obtiene la funcion almacenada en el arbo; ejm: (2*5)
-  getExpression(arrayTree) {
-    let fullTree = "(";
-    for (let i = 0; i < arrayTree.length; i++) {
-      if (typeof arrayTree[i] === "object") {
-        fullTree += this.getExpression(arrayTree[i]);
-      } else {
-        fullTree += arrayTree[i];
-      }
-    }
-    fullTree += ")";
-    return fullTree;
-  }
-
   //se obtienen el numero de generaciones creadas
   getGenerations() {
     return this.generations;
@@ -441,21 +442,23 @@ class Population {
     }
     return total / (this.population.length);
   }
-  
-  getDataSet(){
-    let display="";
-    let ecuacion= this.getBestSolution();
-    let replacement="";
+
+  getDataSet() {
+    let display = "";
+    let ecuacion = this.getBestSolution();
+    let replacement = "";
 
     for (let i = 0; i < Object.keys(this.dataSet).length; i++) {
-      replacement= ecuacion;
-      
-      for (let j = 0; j < this.dataSet[i].length-1; j++) {     
-        display+= " "+this.variables[j]+"= "+ this.dataSet[i][j]+"";
-        replacement= replacement.replace(this.variables[j],dataSet[i][j]);
+      replacement = ecuacion;
+
+      for (let j = 0; j < this.dataSet[i].length - 1; j++) {
+        display += " " + this.variables[j] + "= " + this.dataSet[i][j] + "";
+        let regex = new RegExp(`\\b${this.variables[j]}\\b`, 'gi');
+        replacement = replacement.replace(regex, dataSet[i][j]);
+
       }
-      display+= "<br>"+replacement+" = "+(eval(replacement));
-      display+= "<br><br>";
+      display += "<br>" + replacement + " = " + (eval(replacement));
+      display += "<br><br>";
     }
     return display;
   }
